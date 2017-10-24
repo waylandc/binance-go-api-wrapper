@@ -15,6 +15,7 @@ import (
 	"encoding/hex"
 	"io/ioutil"
 	"encoding/json"
+	"strconv"
 )
 
 const baseURL = "https://www.binance.com/api"
@@ -46,14 +47,27 @@ type PriceChangeResponse struct {
 	//LastId int64	`json:"lastId"`
 }
 
-//type PriceTicker struct {
-//	Symbol string	`json:"symbol"`
-//	Price float64	`json:"price"`
-//}
+type PriceTicker struct {
+	Symbol string	`json:"symbol"`
+	Price float64	`json:"price,string"`
+}
+
+type Order struct {
+	Price float64	`json:",string"`
+	Quantity float64	`json:",string"`
+}
+
+type OrderBook struct {
+	Symbol string
+	LastUpdateId int	`json:"lastUpdateId"`
+	Bids []Order 	`json:",string"`
+	Asks []Order	`json:",string"`
+}
 
 func New(myKey string, mySecret string) *MySession {
 	return &MySession{httpClient:http.DefaultClient, key: myKey, secret: mySecret}
 }
+
 func (session *MySession) do(method, resource, payload string, auth bool, result interface{}) (resp *http.Response, err error) {
 
 	fullUrl := fmt.Sprintf("%s/%s", baseURL, resource)
@@ -136,7 +150,7 @@ func handleError(resp *http.Response) error {
 //
 //}
 
-func (session *MySession) get24Hr(symbol string) (price PriceChangeResponse, err error) {
+func (session *MySession) Get24Hr(symbol string) (price PriceChangeResponse, err error) {
 	reqUrl := fmt.Sprintf("v1/ticker/24hr?symbol=%s", symbol)
 	result := new(PriceChangeResponse)
 	_, err = session.do("GET", reqUrl, "", false, &result)
@@ -144,3 +158,40 @@ func (session *MySession) get24Hr(symbol string) (price PriceChangeResponse, err
 	return *result, err
 }
 
+func (session *MySession) GetAllPrices() (prices []PriceTicker, err error) {
+	reqUrl := "v1/ticker/allPrices"
+	results := []PriceTicker{}
+	_, err = session.do("GET", reqUrl, "", false, &results)
+
+	return results, err
+}
+
+func (session *MySession) GetOrderBook(symbol string, limit int) (ob OrderBook, err error) {
+	reqUrl := fmt.Sprintf("v1/depth?symbol=%s&limit=%d", symbol, limit)
+	result := new(OrderBook)
+	_, err = session.do("GET", reqUrl, "", false, &result)
+	result.Symbol = symbol
+
+	return *result, err
+}
+
+func (o *Order) UnmarshalJSON(b []byte) error {
+	var s [2]string
+
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
+	}
+
+	o.Price, err = strconv.ParseFloat(s[0], 64)
+	if err != nil {
+		return err
+	}
+
+	o.Quantity, err = strconv.ParseFloat(s[1], 64)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

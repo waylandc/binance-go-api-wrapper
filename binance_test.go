@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 }
 
 func Test24HourPrice(t *testing.T) {
-	price, err := sess.get24Hr("BTCUSDT")
+	price, err := sess.Get24Hr("BTCUSDT")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,4 +28,32 @@ func Test24HourPrice(t *testing.T) {
 	t.Logf("Symbol: %v Bid: %v Ask: %v Last: %v Volume: %v\n",
 		price.Symbol, price.BidPrice, price.AskPrice, price.LastPrice, price.Volume)
 
+}
+
+func TestGetAllPrices(t *testing.T) {
+	prices := []PriceTicker{}
+	prices, err := sess.GetAllPrices()
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Logf("Returned %v prices", len(prices))
+	i := 0
+	for i < 3 {
+		t.Logf("Symbol: %v Price: %v\n", prices[i].Symbol, prices[i].Price)
+		i++
+	}
+}
+
+func TestGetOrderBook(t *testing.T) {
+	ob, err := sess.GetOrderBook("BTCUSDT", 10)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if ob.Symbol != "BTCUSDT" {
+		t.Errorf("Expected order book for %s. Got %s", "BTCUSDT", ob.Symbol)
+	}
+
+	t.Logf("Order book for %s returned %d asks and %d bids", ob.Symbol, len(ob.Asks), len(ob.Bids))
 }
