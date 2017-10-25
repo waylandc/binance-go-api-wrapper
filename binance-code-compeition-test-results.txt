@@ -1,0 +1,117 @@
+C:\Users\Wayland\go\src\github.com\waylandc\binance-go-api-wrapper\binance (master)
+λ go test -v
+=== RUN   TestSetup
+--- PASS: TestSetup (0.00s)
+=== RUN   Test24HourPrice
+--- PASS: Test24HourPrice (0.29s)
+        binance-go-api-wrapper_test.go:32: Get the latest price of BTCUSDT
+        binance-go-api-wrapper_test.go:38: Symbol: BTCUSDT Bid: 5497.04 Ask: 5497.12 Last: 5497.05 Volume: 2312.936008
+=== RUN   TestGetOrderBook
+--- PASS: TestGetOrderBook (0.07s)
+        binance-go-api-wrapper_test.go:44: Get the depth/order book of BTCUSDT
+        binance-go-api-wrapper_test.go:54: OrderQuote book for BTCUSDT returned 10 asks and 10 bids
+=== RUN   TestCreateQueryCancelLimitOrder
+--- PASS: TestCreateQueryCancelLimitOrder (0.24s)
+        binance-go-api-wrapper_test.go:58: Place a LIMIT order
+        binance-go-api-wrapper_test.go:73: Limit Ordered ID 3123518 submitted, QdS0CCEAfpbx1wiwDcLk81
+        binance-go-api-wrapper_test.go:75: Check an order's status
+        binance-go-api-wrapper_test.go:82: OrderQuery::
+                Order ID=3123518, Symbol=BTCUSDT, Side=SELL, Status=NEW, Price=9500.000000, Quantity=0.001000, ExecutedQty=0.000000
+        binance-go-api-wrapper_test.go:85: Cancel an order
+        binance-go-api-wrapper_test.go:91: Cancelled order ID 3123518, cancel reference 2FO6EAPUSIiaT2PUJxpcU7
+=== RUN   TestCreateMarketOrder
+--- PASS: TestCreateMarketOrder (0.18s)
+        binance-go-api-wrapper_test.go:95: Place a MARKET order
+        binance-go-api-wrapper_test.go:109: Market Ordered ID 1638415 submitted, MRBebqD6oQBljmDm2rZQi1
+        binance-go-api-wrapper_test.go:111: Check an order's status
+        binance-go-api-wrapper_test.go:118: OrderQuery::
+                Order ID=1638415, Symbol=STRATBTC, Side=BUY, Status=FILLED, Price=0.000000, Quantity=10.000000, ExecutedQty=10.000000
+=== RUN   TestGetOpenOrders
+--- PASS: TestGetOpenOrders (0.09s)
+        binance-go-api-wrapper_test.go:140: Get list of open orders
+        binance-go-api-wrapper_test.go:145: We currently have 0 open orders.
+=== RUN   TestGetAccount
+--- PASS: TestGetAccount (0.08s)
+        binance-go-api-wrapper_test.go:150: Get account info and show list of all current positions
+        binance-go-api-wrapper_test.go:156: Account Summary::
+        binance-go-api-wrapper_test.go:157:     Maker Commission: 10%   Taker Commission:  10%
+        binance-go-api-wrapper_test.go:158:     Buyer Commission:  0%   Seller Commission:  0%
+        binance-go-api-wrapper_test.go:159:     Can Trade: true
+        binance-go-api-wrapper_test.go:160:     Can Deposit: true
+        binance-go-api-wrapper_test.go:161:     Can Withdraw: true
+        binance-go-api-wrapper_test.go:162:     Positions::
+        binance-go-api-wrapper_test.go:163:         Coin         Available       In Order
+        binance-go-api-wrapper_test.go:165:             BTC      0.192160        0.000000
+        binance-go-api-wrapper_test.go:165:             LTC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ETH      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             BNC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ICO      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             NEO      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             BNB      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             123      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             456      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             QTUM     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             EOS      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             SNT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             BNT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             GAS      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             BCC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             BTM      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             USDT     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             HCC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             HSR      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             OAX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             DNT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             MCO      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ICN      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ELC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             PAY      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ZRX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             OMG      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             WTC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             LRX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             YOYO     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             LRC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             LLT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             TRX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             FID      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             SNGLS    0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             STRAT    9.990000        0.000000
+        binance-go-api-wrapper_test.go:165:             BQX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             FUN      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             KNC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             CDT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             XVG      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             IOTA     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             SNM      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             LINK     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             CVC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             TNT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             REP      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             CTR      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             MDA      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             MTL      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             SALT     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             NULS     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             SUB      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             STX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             MTH      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             CAT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ADX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             PIX      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ETC      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ENG      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             ZEC      0.000000        0.000000                                                          
+        binance-go-api-wrapper_test.go:165:             AST      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             1ST      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             GNT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             DGD      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             BAT      0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             DASH     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             POWR     0.000000        0.000000
+        binance-go-api-wrapper_test.go:165:             BTG      0.200000        0.000000
+        binance-go-api-wrapper_test.go:165:             REQ      0.000000        0.000000
+PASS
+ok      github.com/waylandc/binance-go-api-wrapper/binance      2.916s
+
+C:\Users\Wayland\go\src\github.com\waylandc\binance-go-api-wrapper\binance (master)

@@ -1,31 +1,36 @@
-package main
+package binance
 
 /**
-	Wrapper for the Binance Exchange REST API
- */
+Wrapper for the Binance Exchange REST API
+*/
 
 import (
 	"net/http"
-	"strings"
 	"fmt"
+	"strings"
 	"time"
-	"errors"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"io/ioutil"
+	"bytes"
 	"encoding/json"
 	"strconv"
-	"bytes"
+	"errors"
 )
+
 
 const baseURL = "https://www.binance.com/api"
 
-func New(myKey string, mySecret string) *MySession {
-	return &MySession{httpClient:http.DefaultClient, key: myKey, secret: mySecret}
+func init() {
+	// do nothing
 }
 
-func (session *MySession) do(method, resource, payload string, auth bool, result interface{}) (resp *http.Response, err error) {
+func New(myKey string, mySecret string) *BSession {
+	return &BSession{httpClient: http.DefaultClient, key: myKey, secret: mySecret}
+}
+
+func (session *BSession) do(method, resource, payload string, auth bool, result interface{}) (resp *http.Response, err error) {
 
 	fullUrl := fmt.Sprintf("%s/%s", baseURL, resource)
 
@@ -43,12 +48,9 @@ func (session *MySession) do(method, resource, payload string, auth bool, result
 		}
 
 		req.Header.Add("X-MBX-APIKEY", session.key)
-
 		q := req.URL.Query()
-
 		timestamp := time.Now().Unix() * 1000
 		q.Set("timestamp", fmt.Sprintf("%d", timestamp))
-
 		mac := hmac.New(sha256.New, []byte(session.secret))
 		_, err := mac.Write([]byte(q.Encode()))
 		if err != nil {
@@ -74,8 +76,9 @@ func (session *MySession) do(method, resource, payload string, auth bool, result
 	// Process response
 	if resp != nil {
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		bodyString := string(bodyBytes)
-		fmt.Println("DEBUG:: " + bodyString)
+		//uncomment next 2 lines if you need to see message for debugging
+		//bodyString := string(bodyBytes)
+		//fmt.Println("DEBUG:: " + bodyString)
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 		decoder := json.NewDecoder(resp.Body)
 		err = decoder.Decode(&result)
@@ -84,27 +87,26 @@ func (session *MySession) do(method, resource, payload string, auth bool, result
 }
 
 func handleError(resp *http.Response) error {
-
-	if resp.StatusCode == 400 || resp.StatusCode == 401  || resp.StatusCode == 404 {
-
-		body, err := ioutil.ReadAll(resp.Body)
+	//Assuming anything other than HTTP 200 is an error. API docs don't really say
+	if resp.StatusCode == 200 {
+		return nil
+	} else {
+	body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
 
-		errorText := fmt.Sprintf("Bad Request: %s", string(body))
+		errorText := fmt.Sprintf("ERROR: %s", string(body))
 		return errors.New(errorText)
-	} else {
-		return nil
 	}
 
 }
 
-func (session *MySession) GetAccount(recv int) (acct Account, err error) {
+func (session *BSession) GetAccount(recv int) (acct Account, err error) {
 	timestamp := time.Now().Unix() * 1000
 	reqUrl := fmt.Sprintf("v3/account?timestamp=%d", timestamp)
 	if recv > 0 && recv < 501 {
-		reqUrl = fmt.Sprintf(reqUrl + "&recvWindow=%d", recv)
+		reqUrl = fmt.Sprintf(reqUrl+"&recvWindow=%d", recv)
 	}
 	a := new(Account)
 	_, err = session.do("GET", reqUrl, "", true, &a)
@@ -112,7 +114,7 @@ func (session *MySession) GetAccount(recv int) (acct Account, err error) {
 	return *a, err
 }
 
-func (session *MySession) GetOpenOrders(symbol string, receiveWindow int) (orders []Order, err error) {
+func (session *BSession) GetOpenOrders(symbol string, receiveWindow int) (orders []Order, err error) {
 	if symbol == "" {
 		return nil, errors.New("symbol parameter is missing")
 	}
@@ -130,8 +132,7 @@ func (session *MySession) GetOpenOrders(symbol string, receiveWindow int) (order
 	return orders, err
 }
 
-
-func (session *MySession) Get24Hr(symbol string) (price PriceChangeResponse, err error) {
+func (session *BSession) Get24Hr(symbol string) (price PriceChangeResponse, err error) {
 	reqUrl := fmt.Sprintf("v1/ticker/24hr?symbol=%s", symbol)
 	result := new(PriceChangeResponse)
 	_, err = session.do("GET", reqUrl, "", false, &result)
@@ -139,7 +140,7 @@ func (session *MySession) Get24Hr(symbol string) (price PriceChangeResponse, err
 	return *result, err
 }
 
-func (session *MySession) GetAllPrices() (prices []PriceTicker, err error) {
+func (session *BSession) GetAllPrices() (prices []PriceTicker, err error) {
 	reqUrl := "v1/ticker/allPrices"
 	results := []PriceTicker{}
 	_, err = session.do("GET", reqUrl, "", false, &results)
@@ -147,7 +148,7 @@ func (session *MySession) GetAllPrices() (prices []PriceTicker, err error) {
 	return results, err
 }
 
-func (session *MySession) GetOrderBook(symbol string, limit int) (ob OrderBook, err error) {
+func (session *BSession) GetOrderBook(symbol string, limit int) (ob OrderBook, err error) {
 	reqUrl := fmt.Sprintf("v1/depth?symbol=%s&limit=%d", symbol, limit)
 	result := new(OrderBook)
 	_, err = session.do("GET", reqUrl, "", false, &result)
@@ -156,12 +157,35 @@ func (session *MySession) GetOrderBook(symbol string, limit int) (ob OrderBook, 
 	return *result, err
 }
 
-func (session *MySession) CreateOrder(req OrderRequest) (res OrderResponse, err error) {
-	//timestamp := time.Now().Unix() * 1000
-	reqUrl := fmt.Sprintf( "v3/order?symbol=%s&type=%s&side=%s&timeInForce=%s&quantity=%f&price=%f",
-		req.Symbol, req.Type, req.Side, req.TimeInForce, req.Quantity, req.Price)
+func (session *BSession) CreateOrder(req OrderRequest) (res OrderResponse, err error) {
+	var reqUrl string
+	if req.Type == "LIMIT" {
+		reqUrl = fmt.Sprintf("v3/order?symbol=%s&type=%s&side=%s&timeInForce=%s&quantity=%f&price=%f",
+			req.Symbol, req.Type, req.Side, req.TimeInForce, req.Quantity, req.Price)
+	} else if req.Type == "MARKET" {
+		reqUrl = fmt.Sprintf("v3/order?symbol=%s&type=%s&side=%s&quantity=%f",
+			req.Symbol, req.Type, req.Side, req.Quantity)
+
+	}
+
 	result := new(OrderResponse)
 	_, err = session.do("POST", reqUrl, "", true, &result)
+	result.Symbol = req.Symbol
+	return *result, err
+}
+
+func (session *BSession) QueryOrder(req OrderResponse) (status OrderStatus, err error) {
+	reqUrl := fmt.Sprintf("v3/order?symbol=%s&orderId=%d", req.Symbol, req.OrderId)
+	result := new(OrderStatus)
+	_, err = session.do("GET", reqUrl, "", true, &result)
+	return *result, err
+}
+
+func (session *BSession) CancelOrder(req OrderResponse) (res CancelOrderResponse, err error) {
+	reqUrl := fmt.Sprintf("v3/order?symbol=%s&orderId=%d&origClientOrderId=%s",
+		req.Symbol, req.OrderId, req.ClientOrderId)
+	result := new(CancelOrderResponse)
+	_, err = session.do("DELETE", reqUrl, "", true, &result)
 	return *result, err
 }
 
