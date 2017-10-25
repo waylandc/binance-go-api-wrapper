@@ -16,53 +16,10 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"strconv"
+	"bytes"
 )
 
 const baseURL = "https://www.binance.com/api"
-
-type MySession struct {
-	httpClient *http.Client
-	key string
-	secret string
-}
-
-type PriceChangeResponse struct {
-	Symbol string
-	PriceChange string	`json:"priceChange"`
-	PriceChangePercent string	`json:"priceChangePercent"`
-	WeightedAvgPrice float64	`json:"weightedAvgPrice,string"`
-	PrevClosePrice float64	`json:"prevClosePrice,string"`
-	LastPrice float64	`json:"lastPrice,string"`
-	BidPrice float64	`json:"bidPrice,string"`
-	AskPrice float64	`json:"askPrice,string"`
-	OpenPrice float64	`json:"openPrice,string"`
-	HighPrice float64	`json:"highPrice,string"`
-	LowPrice float64	`json:"lowPrice,string"`
-	Volume float64		`json:"volume,string"`
-	OpenTime int64		`json:"openTime"`
-	CloseTime int64		`json:"closeTime"`
-	Count int64			`json:"count"`
-	// don't know what these are used for so comment out but leave here as reminder they're available
-	//FirstId int64	`json:"firstId"`
-	//LastId int64	`json:"lastId"`
-}
-
-type PriceTicker struct {
-	Symbol string	`json:"symbol"`
-	Price float64	`json:"price,string"`
-}
-
-type Order struct {
-	Price float64	`json:",string"`
-	Quantity float64	`json:",string"`
-}
-
-type OrderBook struct {
-	Symbol string
-	LastUpdateId int	`json:"lastUpdateId"`
-	Bids []Order 	`json:",string"`
-	Asks []Order	`json:",string"`
-}
 
 func New(myKey string, mySecret string) *MySession {
 	return &MySession{httpClient:http.DefaultClient, key: myKey, secret: mySecret}
@@ -81,7 +38,7 @@ func (session *MySession) do(method, resource, payload string, auth bool, result
 
 	if auth {
 		if len(session.key) == 0 || len(session.secret) == 0 {
-			err = errors.New("Private endpoints requre you to set an API Key and API Secret")
+			err = errors.New("private endpoints require you to set an API Key and API Secret")
 			return
 		}
 
@@ -116,9 +73,10 @@ func (session *MySession) do(method, resource, payload string, auth bool, result
 
 	// Process response
 	if resp != nil {
-		//bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		//bodyString := string(bodyBytes)
-		//fmt.Println(bodyString)
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		fmt.Println("DEBUG:: " + bodyString)
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 		decoder := json.NewDecoder(resp.Body)
 		err = decoder.Decode(&result)
 	}
@@ -127,7 +85,7 @@ func (session *MySession) do(method, resource, payload string, auth bool, result
 
 func handleError(resp *http.Response) error {
 
-	if resp.StatusCode == 400 {
+	if resp.StatusCode == 400 || resp.StatusCode == 401  || resp.StatusCode == 404 {
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
@@ -142,13 +100,36 @@ func handleError(resp *http.Response) error {
 
 }
 
-//func (session *Session) getOpenOrders() {
-//
-//}
-//
-//func getOrderBook() {
-//
-//}
+func (session *MySession) GetAccount(recv int) (acct Account, err error) {
+	timestamp := time.Now().Unix() * 1000
+	reqUrl := fmt.Sprintf("v3/account?timestamp=%d", timestamp)
+	if recv > 0 && recv < 501 {
+		reqUrl = fmt.Sprintf(reqUrl + "&recvWindow=%d", recv)
+	}
+	a := new(Account)
+	_, err = session.do("GET", reqUrl, "", true, &a)
+
+	return *a, err
+}
+
+func (session *MySession) GetOpenOrders(symbol string, receiveWindow int) (orders []Order, err error) {
+	if symbol == "" {
+		return nil, errors.New("symbol parameter is missing")
+	}
+
+	timestamp := time.Now().Unix() * 1000
+
+	reqUrl := fmt.Sprintf("v3/openOrders?symbol=%s&timestamp=%d", symbol, timestamp)
+	if receiveWindow > 0 {
+		reqUrl = fmt.Sprintf(reqUrl+"&recvWindow=%d", receiveWindow)
+	}
+
+	orders = []Order{}
+	_, err = session.do("GET", reqUrl, "", true, &orders)
+
+	return orders, err
+}
+
 
 func (session *MySession) Get24Hr(symbol string) (price PriceChangeResponse, err error) {
 	reqUrl := fmt.Sprintf("v1/ticker/24hr?symbol=%s", symbol)
@@ -175,7 +156,16 @@ func (session *MySession) GetOrderBook(symbol string, limit int) (ob OrderBook, 
 	return *result, err
 }
 
-func (o *Order) UnmarshalJSON(b []byte) error {
+func (session *MySession) CreateOrder(req OrderRequest) (res OrderResponse, err error) {
+	//timestamp := time.Now().Unix() * 1000
+	reqUrl := fmt.Sprintf( "v3/order?symbol=%s&type=%s&side=%s&timeInForce=%s&quantity=%f&price=%f",
+		req.Symbol, req.Type, req.Side, req.TimeInForce, req.Quantity, req.Price)
+	result := new(OrderResponse)
+	_, err = session.do("POST", reqUrl, "", true, &result)
+	return *result, err
+}
+
+func (o *OrderQuote) UnmarshalJSON(b []byte) error {
 	var s [2]string
 
 	err := json.Unmarshal(b, &s)
