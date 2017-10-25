@@ -38,8 +38,3 @@ func main() {
 	
 }
 ```
-
-## Binance Code Competition Reviewers ##
-### Clone the package ###
-````bash
-````

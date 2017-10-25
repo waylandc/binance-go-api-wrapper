@@ -101,7 +101,7 @@ C:\Users\Wayland\go\src\github.com\waylandc\binance-go-api-wrapper\binance (mast
         binance-go-api-wrapper_test.go:165:             PIX      0.000000        0.000000
         binance-go-api-wrapper_test.go:165:             ETC      0.000000        0.000000
         binance-go-api-wrapper_test.go:165:             ENG      0.000000        0.000000
-        binance-go-api-wrapper_test.go:165:             ZEC      0.000000        0.000000                                                          
+        binance-go-api-wrapper_test.go:165:             ZEC      0.000000        0.000000
         binance-go-api-wrapper_test.go:165:             AST      0.000000        0.000000
         binance-go-api-wrapper_test.go:165:             1ST      0.000000        0.000000
         binance-go-api-wrapper_test.go:165:             GNT      0.000000        0.000000
