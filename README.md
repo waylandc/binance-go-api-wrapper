@@ -15,6 +15,9 @@ go get github.com/waylandc/binance-go-api-wrapper/binance
 ```
 
 ## Example ##
+Before running this, you need to create API keys from Binance website
+and set the BINANCE_KEY and BINANCE_SECRET environment variables.
+
 ```go
 package main
 import (
