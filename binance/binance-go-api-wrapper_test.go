@@ -1,3 +1,8 @@
+/*
+Copyright 2017 Wayland Chan
+Licensed under terms of MIT license (see LICENSE)
+*/
+
 package binance
 
 import (

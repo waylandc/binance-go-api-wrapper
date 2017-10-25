@@ -1,8 +1,13 @@
-package binance
+/*
+Copyright 2017 Wayland Chan
+Licensed under terms of MIT license (see LICENSE)
+*/
 
-/**
+/*
 Wrapper for the Binance Exchange REST API
 */
+
+package binance
 
 import (
 	"net/http"
