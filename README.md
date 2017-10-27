@@ -42,5 +42,9 @@ func main() {
 }
 ```
 
+## Appreciation/Donation ##
+Please use my referral link to sign up your Binance account
+https://www.binance.com/register.html?ref=10911890
+
 ## License ##
 MIT License - see LICENSE file for details
